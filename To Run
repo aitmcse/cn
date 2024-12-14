@@ -1,0 +1,5 @@
+vi 155.tcl
+ns 155.tcl
+vi 155.awk
+awk -f 155.awk labl.tr
+To exit Esc shift+; wq
