@@ -1,0 +1,107 @@
+#include <stdio.h>
+#include <string.h>
+
+void performDivision(int dividend[], int divisor[], int remainder[], int dataBits, int divisorBits);
+
+int main() {
+    int dataBits, divisorBits;
+
+    // Input the data bits
+    printf("Enter the number of data bits: ");
+    scanf("%d", &dataBits);
+
+    int data[dataBits];
+    printf("Enter the data bits (0 or 1): ");
+    for (int i = 0; i < dataBits; i++) {
+        scanf("%d", &data[i]);
+    }
+
+    // Input the divisor (polynomial)
+    printf("Enter the number of divisor bits: ");
+    scanf("%d", &divisorBits);
+
+    int divisor[divisorBits];
+    printf("Enter the divisor bits (0 or 1): ");
+    for (int i = 0; i < divisorBits; i++) {
+        scanf("%d", &divisor[i]);
+    }
+
+    // Calculate the total length of the message to be transmitted
+    int totalBits = dataBits + divisorBits - 1;
+    int dividend[totalBits], remainder[totalBits], crc[totalBits];
+
+    // Append zeros to the data for division
+    for (int i = 0; i < dataBits; i++) {
+        dividend[i] = data[i];
+    }
+    for (int i = dataBits; i < totalBits; i++) {
+        dividend[i] = 0;
+    }
+
+    printf("Dividend after appending zeros: ");
+    for (int i = 0; i < totalBits; i++) {
+        printf("%d", dividend[i]);
+    }
+    printf("\n");
+
+    // Perform division to calculate the CRC
+    performDivision(dividend, divisor, remainder, totalBits, divisorBits);
+
+    // Combine the data and remainder to form the CRC code
+    for (int i = 0; i < dataBits; i++) {
+        crc[i] = data[i]; // Original data
+    }
+    for (int i = dataBits; i < totalBits; i++) {
+        crc[i] = remainder[i]; // Remainder
+    }
+
+    printf("Generated CRC code: ");
+    for (int i = 0; i < totalBits; i++) {
+        printf("%d", crc[i]);
+    }
+    printf("\n");
+
+    // Input the received CRC code for error checking
+    int receivedCRC[totalBits];
+    printf("Enter the received CRC code: ");
+    for (int i = 0; i < totalBits; i++) {
+        scanf("%d", &receivedCRC[i]);
+    }
+
+    // Perform division on the received CRC code to check for errors
+    performDivision(receivedCRC, divisor, remainder, totalBits, divisorBits);
+
+    // Check the remainder
+    int isError = 0;
+    for (int i = 0; i < totalBits; i++) {
+        if (remainder[i] != 0) {
+            isError = 1;
+            break;
+        }
+    }
+
+    if (isError) {
+        printf("Error detected in the received CRC code.\n");
+    } else {
+        printf("No error detected in the received CRC code.\n");
+    }
+
+    return 0;
+}
+
+// Function to perform modulo-2 division
+void performDivision(int dividend[], int divisor[], int remainder[], int totalBits, int divisorBits) {
+    // Copy dividend into the remainder array
+    for (int i = 0; i < totalBits; i++) {
+        remainder[i] = dividend[i];
+    }
+
+    // Perform the division process
+    for (int i = 0; i <= totalBits - divisorBits; i++) {
+        if (remainder[i] == 1) { // If the current bit is 1, perform XOR
+            for (int j = 0; j < divisorBits; j++) {
+                remainder[i + j] = remainder[i + j] ^ divisor[j];
+            }
+        }
+    }
+}
